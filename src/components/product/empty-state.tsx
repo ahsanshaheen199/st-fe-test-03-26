@@ -4,7 +4,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ message = "No products found" }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-16">
       <div className="text-6xl mb-4" role="img" aria-label="Search icon">
         🔍
       </div>
