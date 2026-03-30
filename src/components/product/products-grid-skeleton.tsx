@@ -4,9 +4,6 @@ interface ProductsGridSkeletonProps {
   count?: number;
 }
 
-/**
- * ProductsGridSkeleton - Grid of product card skeletons
- */
 export function ProductsGridSkeleton({ count = 8 }: ProductsGridSkeletonProps) {
   return (
     <div className="space-y-6">

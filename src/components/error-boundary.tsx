@@ -10,6 +10,9 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+// Check if we're in development mode
+const isDevelopment = import.meta.env.DEV;
+
 export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
@@ -48,9 +51,18 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-8 bg-background">
+        <div
+          className="min-h-screen flex items-center justify-center p-8 bg-background"
+          role="main"
+        >
           <div className="glass-panel p-8 max-w-md w-full text-center">
-            <div className="text-6xl mb-4">😵</div>
+            <div
+              className="text-6xl mb-4"
+              role="img"
+              aria-label="Sad face emoji"
+            >
+              😵
+            </div>
             <h1 className="text-2xl font-semibold mb-2 text-text-main">
               Oops! Something went wrong
             </h1>
@@ -58,17 +70,25 @@ export class ErrorBoundary extends Component<
               We encountered an unexpected error. Don't worry, our team has been
               notified.
             </p>
-            {this.state.error && (
+            {isDevelopment && this.state.error && (
               <details className="mb-6 text-left">
-                <summary className="cursor-pointer text-sm text-text-muted hover:text-text-main mb-2">
-                  Technical details
+                <summary
+                  className="cursor-pointer text-sm text-text-muted hover:text-text-main mb-2"
+                  aria-label="Show technical details"
+                >
+                  Technical details (development only)
                 </summary>
                 <pre className="bg-surface-hover p-4 rounded-lg text-xs overflow-auto text-text-muted">
                   {this.state.error.toString()}
                 </pre>
               </details>
             )}
-            <button onClick={this.handleReset} className="btn-primary w-full">
+            <button
+              type="button"
+              onClick={this.handleReset}
+              className="btn-primary w-full"
+              aria-label="Reset and try again"
+            >
               Try Again
             </button>
           </div>

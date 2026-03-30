@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams } from "../../hooks/useSearchParams";
-import { useState } from "react";
+import { useMemo, useCallback } from "react";
+import { updateSearchParams } from "../../utils/url";
 
 interface PaginationProps {
   totalPages: number;
@@ -11,11 +12,22 @@ interface PaginationProps {
  */
 export function Pagination({ totalPages }: PaginationProps) {
   const searchParams = useSearchParams();
-  const [currentPage, setCurrentPage] = useState(
-    searchParams.get("page") ? Number(searchParams.get("page")) : 1,
-  );
-  // Generate page numbers to show
-  const getPageNumbers = () => {
+
+  // Parse and validate current page from URL
+  const currentPage = useMemo(() => {
+    const pageParam = searchParams.get("page");
+    if (!pageParam) return 1;
+
+    const page = Number(pageParam);
+    // Validate page is a number and within valid range
+    if (isNaN(page) || page < 1 || page > totalPages) {
+      return 1;
+    }
+    return page;
+  }, [searchParams, totalPages]);
+
+  // Generate page numbers to show (memoized)
+  const pageNumbers = useMemo(() => {
     const pages: (number | string)[] = [];
     const showEllipsis = totalPages > 7;
 
@@ -49,26 +61,24 @@ export function Pagination({ totalPages }: PaginationProps) {
     }
 
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
-  const onPageChange = (value: number) => {
-    setCurrentPage(value + 1);
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Update page param
-    if (value > 1) {
-      urlParams.set("page", value.toString());
-    } else {
-      urlParams.delete("page");
+  const onPageChange = useCallback((value: number) => {
+    // Validate page number
+    if (isNaN(value) || value < 1) {
+      console.warn(`Invalid page number: ${value}`);
+      return;
     }
 
-    // Update URL without reloading the page
-    const newUrl = urlParams.size
-      ? `${window.location.pathname}?${urlParams.toString()}`
-      : window.location.pathname;
-    window.history.pushState({}, "", newUrl);
-    window.dispatchEvent(new Event("popstate"));
-  };
+    updateSearchParams((params) => {
+      // Update page param
+      if (value > 1) {
+        params.set("page", value.toString());
+      } else {
+        params.delete("page");
+      }
+    });
+  }, []);
 
   return (
     <div className="flex justify-center items-center gap-2 pt-4">
@@ -83,12 +93,13 @@ export function Pagination({ totalPages }: PaginationProps) {
       </button>
 
       {/* Page Numbers */}
-      {getPageNumbers().map((page, index) => {
+      {pageNumbers.map((page, index) => {
         if (page === "...") {
           return (
             <span
               key={`ellipsis-${index}`}
               className="w-8 h-8 flex items-center justify-center text-text-muted"
+              aria-hidden="true"
             >
               ...
             </span>

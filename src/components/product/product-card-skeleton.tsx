@@ -1,6 +1,3 @@
-/**
- * ProductCardSkeleton - Skeleton loader matching ProductCard design
- */
 export function ProductCardSkeleton() {
   return (
     <div>

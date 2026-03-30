@@ -1,7 +1,8 @@
 import { Search, X } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useSearchParams } from "../hooks/useSearchParams";
+import { updateSearchParams } from "../utils/url";
 
 interface SearchInputProps {
   placeholder?: string;
@@ -23,47 +24,51 @@ export function SearchInput({
     delay: debounceDelay,
   });
 
-  // Update parent only when debounced value changes
+  // Update URL only when debounced value changes
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const currentSearchTerm = inputRef.current?.value;
-    if (debouncedValue !== currentSearchTerm) {
+    const currentUrlSearch = params.get("search") || "";
+
+    // Only update if debounced value actually differs from URL
+    if (debouncedValue === currentUrlSearch) {
       return;
     }
-    if (debouncedValue === "") {
-      params.delete("search");
-    } else {
-      params.set("search", debouncedValue);
-    }
 
-    params.delete("page");
-
-    // Push new URL without page reload
-    const newUrl = params.size
-      ? `${window.location.pathname}?${params.toString()}`
-      : window.location.pathname;
-    window.history.pushState({}, "", newUrl);
-    window.dispatchEvent(new Event("popstate"));
+    updateSearchParams((params) => {
+      if (debouncedValue === "") {
+        params.delete("search");
+      } else {
+        params.set("search", debouncedValue);
+      }
+      // Reset page when search changes
+      params.delete("page");
+    });
   }, [debouncedValue]);
 
   // Handle clear button click
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setLocalValue("");
-  };
+  }, []);
 
   return (
-    <div className="glass-panel flex items-center px-4 py-3 flex-1 max-w-[400px]">
-      <Search size={20} className="mr-3 text-text-muted" />
+    <div
+      role="search"
+      className="glass-panel flex items-center px-4 py-3 flex-1 max-w-[400px]"
+    >
+      <Search size={20} className="mr-3 text-text-muted" aria-hidden="true" />
       <input
         ref={inputRef}
         type="text"
+        role="searchbox"
         placeholder={placeholder}
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
         className="bg-transparent border-none text-text-main outline-none w-full text-base"
+        aria-label="Search products"
       />
       {localValue && (
         <button
+          type="button"
           onClick={handleClear}
           className="ml-2 text-text-muted hover:text-text-main transition-colors"
           aria-label="Clear search"
