@@ -26,7 +26,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
   // Format price once (could also be done at data level)
   const formattedPrice = useMemo(
     () => product.price.toLocaleString(),
-    [product.price]
+    [product.price],
   );
 
   // Validate image URL
@@ -62,7 +62,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
       </figure>
       <div className="flex flex-col p-2">
         <span className="font-murecho text-sm text-[#5A6573] font-normal inline-block mb-0.5">
-          Fabrilife
+          {product.category}
         </span>
         <h2 className="line-clamp-2 font-medium font-murecho text-base leading-[22px] text-[#1A2B3D] mb-2">
           {product.name}
